@@ -90,5 +90,15 @@ jobs:
 
           sudo_bash 'cd /opt/gov-rag && docker compose -f docker-compose.server.yml up -d --build'
           sudo_bash 'cd /opt/gov-rag && docker compose -f docker-compose.server.yml ps'
-          curl -fsS http://127.0.0.1/api/health
+
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1/api/health; then
+              exit 0
+            fi
+            echo "Waiting for app health check... attempt ${attempt}/30"
+            sleep 2
+          done
+
+          sudo_bash 'cd /opt/gov-rag && docker compose -f docker-compose.server.yml logs --tail=120'
+          exit 1
           REMOTE
