@@ -1,0 +1,25 @@
+[project]
+name = "gov-rag"
+version = "0.1.0"
+description = "Nationwide government public information knowledge base and QA service"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+  "fastapi>=0.115.0",
+  "uvicorn>=0.32.0",
+  "sqlalchemy>=2.0.0",
+  "psycopg[binary]>=3.2.0",
+  "pydantic-settings>=2.6.0",
+  "httpx>=0.28.0",
+  "beautifulsoup4>=4.12.0",
+  "lxml>=5.3.0",
+  "pyyaml>=6.0.2",
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+

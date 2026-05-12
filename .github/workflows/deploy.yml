@@ -1,0 +1,94 @@
+name: Deploy to server
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build deployment archive
+        run: |
+          tar \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.venv' \
+            --exclude='__pycache__' \
+            --exclude='*.pyc' \
+            --exclude='.env' \
+            --exclude='*.log' \
+            --exclude='gov-rag-deploy.tar' \
+            --exclude='gov_rag.db' \
+            --exclude='data/*.db' \
+            --exclude='frontend/node_modules' \
+            --exclude='frontend/dist' \
+            -cf gov-rag-deploy.tar .
+
+      - name: Install SSH tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+
+      - name: Upload archive
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+        run: |
+          PORT="${SSH_PORT:-22}"
+          sshpass -p "$SSH_PASSWORD" scp \
+            -P "$PORT" \
+            -o StrictHostKeyChecking=no \
+            gov-rag-deploy.tar \
+            "$SSH_USER@$SSH_HOST:/tmp/gov-rag-deploy.tar"
+
+      - name: Deploy with Docker Compose
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          ENV_FILE: ${{ secrets.ENV_FILE }}
+        run: |
+          PORT="${SSH_PORT:-22}"
+          ENV_FILE_B64="$(printf '%s' "$ENV_FILE" | base64 -w 0)"
+          SUDO_PASS_B64="$(printf '%s' "$SSH_PASSWORD" | base64 -w 0)"
+
+          sshpass -p "$SSH_PASSWORD" ssh \
+            -p "$PORT" \
+            -o StrictHostKeyChecking=no \
+            "$SSH_USER@$SSH_HOST" \
+            "DEPLOY_ENV_B64='$ENV_FILE_B64' SUDO_PASS_B64='$SUDO_PASS_B64' bash -s" <<'REMOTE'
+          set -euo pipefail
+
+          SUDO_PASS="$(printf '%s' "$SUDO_PASS_B64" | base64 -d)"
+          sudo_bash() {
+            printf '%s\n' "$SUDO_PASS" | sudo -S bash -lc "$1"
+          }
+
+          sudo_bash 'mkdir -p /opt/gov-rag'
+          sudo_bash 'tar -xf /tmp/gov-rag-deploy.tar -C /opt/gov-rag'
+
+          if [ -n "${DEPLOY_ENV_B64:-}" ]; then
+            printf '%s' "$DEPLOY_ENV_B64" | base64 -d > /tmp/gov-rag.env
+            printf '%s\n' "$SUDO_PASS" | sudo -S install -m 600 /tmp/gov-rag.env /opt/gov-rag/.env
+            rm -f /tmp/gov-rag.env
+          fi
+
+          sudo_bash 'cd /opt/gov-rag && docker compose -f docker-compose.server.yml up -d --build'
+          sudo_bash 'cd /opt/gov-rag && docker compose -f docker-compose.server.yml ps'
+          curl -fsS http://127.0.0.1/api/health
+          REMOTE

@@ -1,0 +1,174 @@
+@import "tailwindcss";
+
+:root {
+  font-family:
+    "Noto Serif SC",
+    "Source Han Serif SC",
+    "Songti SC",
+    Georgia,
+    serif;
+  color: #0f172a;
+  background: #fffdf9;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.gov-conversations .ant-conversations-item {
+  border-radius: 12px;
+}
+
+.gov-conversations-dark .ant-conversations-item {
+  color: #d4d4d4;
+}
+
+.gov-conversations-dark .ant-conversations-item-active {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.gov-conversations-dark .ant-conversations-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.gov-conversations-light .ant-conversations-item {
+  color: #1f2937;
+}
+
+.gov-conversations-light .ant-conversations-item-active {
+  background: rgba(15, 23, 42, 0.08);
+}
+
+.gov-conversations-light .ant-conversations-item:hover {
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.gov-bubble-list .ant-bubble {
+  max-width: 100%;
+}
+
+.gov-bubble-list .ant-bubble-content {
+  border-radius: 18px;
+}
+
+.gov-bubble-list-dark .ant-bubble-content {
+  color: #ececec;
+}
+
+.gov-bubble-list-light .ant-bubble-content {
+  color: #111827;
+}
+
+.gov-bubble-list-light .ant-bubble.ant-bubble-start .ant-bubble-content {
+  background: #f3f4f6;
+}
+
+.gov-bubble-list-light .ant-bubble.ant-bubble-end .ant-bubble-content {
+  background: #e8f7f2;
+}
+
+.gov-sender.ant-sender {
+  border-radius: 28px;
+  box-shadow: none;
+}
+
+.gov-sender-dark.ant-sender {
+  background: #303030;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.gov-sender-light.ant-sender {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.gov-sender .ant-sender-content {
+  background: transparent;
+}
+
+.gov-sender-dark textarea {
+  color: #f5f5f5 !important;
+}
+
+.gov-sender-dark textarea::placeholder {
+  color: #8c8c8c !important;
+}
+
+.gov-sender-light textarea {
+  color: #111827 !important;
+}
+
+.gov-sender-light textarea::placeholder {
+  color: #9ca3af !important;
+}
+
+.gov-drawer .ant-drawer-content {
+  background: #ffffff;
+}
+
+.gov-drawer-dark .ant-drawer-content {
+  background: #262626;
+}
+
+.gov-drawer-dark .ant-drawer-header {
+  background: #262626;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.gov-drawer-dark .ant-drawer-title,
+.gov-drawer-dark .ant-drawer-close {
+  color: #f3f4f6;
+}
+
+.gov-drawer-light .ant-drawer-header {
+  background: #ffffff;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.gov-modal-dark .ant-modal-content,
+.gov-modal-dark .ant-modal-header {
+  background: #262626;
+  color: #f3f4f6;
+}
+
+.gov-modal-dark .ant-modal-title,
+.gov-modal-dark .ant-form-item-label > label,
+.gov-modal-dark .ant-input,
+.gov-modal-dark .ant-input-affix-wrapper,
+.gov-modal-dark .ant-switch + span {
+  color: #f3f4f6;
+}
+
+.gov-modal-dark .ant-input,
+.gov-modal-dark .ant-input-affix-wrapper {
+  background: #303030;
+  border-color: rgba(255, 255, 255, 0.1);
+}
