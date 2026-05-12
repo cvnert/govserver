@@ -62,6 +62,11 @@ SOURCE_SELECTORS = [
 
 
 class GenericGovCrawler(BaseCrawler):
+    main_content_selectors = MAIN_CONTENT_SELECTORS
+    title_selectors = TITLE_SELECTORS
+    date_selectors = DATE_SELECTORS
+    source_selectors = SOURCE_SELECTORS
+
     def fetch_channel(self, channel: dict, limit: int = 10) -> list[dict]:
         html = self._get_text(channel["url"])
         soup = BeautifulSoup(html, "lxml")
@@ -121,12 +126,12 @@ class GenericGovCrawler(BaseCrawler):
         detail_html = self._get_text(url)
         detail_soup = BeautifulSoup(detail_html, "lxml")
 
-        title = self._extract_text_by_selectors(detail_soup, TITLE_SELECTORS)
-        publish_time = self._extract_meta_or_text(detail_soup, DATE_SELECTORS)
-        issuer = self._extract_meta_or_text(detail_soup, SOURCE_SELECTORS)
+        title = self._extract_text_by_selectors(detail_soup, self.title_selectors)
+        publish_time = self._extract_meta_or_text(detail_soup, self.date_selectors)
+        issuer = self._extract_meta_or_text(detail_soup, self.source_selectors)
 
         content_node = None
-        for selector in MAIN_CONTENT_SELECTORS:
+        for selector in self.main_content_selectors:
             candidate = detail_soup.select_one(selector)
             if candidate and clean_text(candidate.get_text("\n", strip=True)):
                 content_node = candidate

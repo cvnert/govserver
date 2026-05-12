@@ -15,6 +15,12 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     openai_base_url: str = ""
     llm_timeout_seconds: float = 120.0
+    embedding_provider: str = "hashing"
+    embedding_model: str = ""
+    embedding_api_key: str = ""
+    embedding_base_url: str = ""
+    embedding_timeout_seconds: float = 60.0
+    embedding_fallback_to_hash: bool = True
 
     model_config = SettingsConfigDict(
         env_file=".env",

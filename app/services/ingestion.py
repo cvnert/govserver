@@ -6,14 +6,16 @@ from sqlalchemy.orm import Session
 from app.crawlers.registry import crawler_registry
 from app.models import Document, DocumentChunk, DocumentChunkVector, Source
 from app.services.chunking import split_document_chunks
+from app.services.embedding import get_embedding_service
 from app.services.registry import source_registry
-from app.services.vectorizer import VECTOR_DIMENSIONS, VECTOR_MODEL_NAME, dumps_vector, text_to_vector
+from app.services.vectorizer import dumps_vector
 from app.utils import sha256_text
 
 
 class IngestionService:
     def __init__(self, db: Session):
         self.db = db
+        self.embedding = get_embedding_service()
 
     def run(self, source_keys: list[str] | None = None, limit_per_channel: int = 10) -> dict:
         results: dict[str, dict] = defaultdict(lambda: {"fetched": 0, "stored": 0})
@@ -49,16 +51,16 @@ class IngestionService:
             if not doc.chunks:
                 self._refresh_chunks(doc, (doc.content_clean or "").strip())
             else:
-                for chunk in doc.chunks:
-                    vector = text_to_vector(chunk.content or "")
+                vectors = self.embedding.embed_texts([chunk.content or "" for chunk in doc.chunks])
+                for chunk, vector in zip(doc.chunks, vectors, strict=True):
                     if chunk.vector:
-                        chunk.vector.model_name = VECTOR_MODEL_NAME
-                        chunk.vector.dimensions = VECTOR_DIMENSIONS
+                        chunk.vector.model_name = self.embedding.model_name
+                        chunk.vector.dimensions = len(vector)
                         chunk.vector.vector_json = dumps_vector(vector)
                     else:
                         chunk.vector = DocumentChunkVector(
-                            model_name=VECTOR_MODEL_NAME,
-                            dimensions=VECTOR_DIMENSIONS,
+                            model_name=self.embedding.model_name,
+                            dimensions=len(vector),
                             vector_json=dumps_vector(vector),
                         )
             total += 1
@@ -110,18 +112,18 @@ class IngestionService:
 
     def _refresh_chunks(self, doc: Document, content_clean: str) -> None:
         chunks = split_document_chunks(content_clean)
+        vectors = self.embedding.embed_texts(chunks)
         doc.chunks.clear()
 
-        for index, chunk in enumerate(chunks):
-            vector = text_to_vector(chunk)
+        for index, (chunk, vector) in enumerate(zip(chunks, vectors, strict=True)):
             doc.chunks.append(
                 DocumentChunk(
                     chunk_index=index,
                     content=chunk,
                     content_hash=sha256_text(chunk),
                     vector=DocumentChunkVector(
-                        model_name=VECTOR_MODEL_NAME,
-                        dimensions=VECTOR_DIMENSIONS,
+                        model_name=self.embedding.model_name,
+                        dimensions=len(vector),
                         vector_json=dumps_vector(vector),
                     ),
                 )

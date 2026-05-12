@@ -3,7 +3,7 @@ name: 杭州市人民政府
 base_url: https://www.hangzhou.gov.cn
 region: 浙江杭州
 enabled: true
-crawler: generic_gov
+crawler: hangzhou_gov
 channels:
   - name: 政府工作动态
     url: https://www.hangzhou.gov.cn/col/col812253/index.html
