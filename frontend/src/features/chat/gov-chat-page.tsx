@@ -18,6 +18,14 @@ type GovChatPageProps = {
   onThemeModeChange: (mode: ThemeMode) => void
 }
 
+function createId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
+}
+
 export function GovChatPage({ themeMode, onThemeModeChange }: GovChatPageProps) {
   const { t } = useTranslation()
   const dark = themeMode === 'dark'
@@ -101,15 +109,15 @@ export function GovChatPage({ themeMode, onThemeModeChange }: GovChatPageProps) 
       .map((message) => ({
         role: message.role,
         content: message.content,
-      }))
+    }))
 
     const userMessage: ChatMessage = {
-      id: crypto.randomUUID(),
+      id: createId(),
       role: 'user',
       content: question,
     }
     const pendingMessage: ChatMessage = {
-      id: crypto.randomUUID(),
+      id: createId(),
       role: 'assistant',
       content: '',
       pending: true,
@@ -229,7 +237,7 @@ export function GovChatPage({ themeMode, onThemeModeChange }: GovChatPageProps) 
   }
 
   function handleNewChat() {
-    const key = crypto.randomUUID()
+    const key = createId()
     setMessagesBySession((current) => ({ ...current, [key]: [] }))
     setSessions((current) => [{ key, label: t(DEFAULT_SESSION_LABEL) }, ...current])
     setActiveSessionKey(key)
