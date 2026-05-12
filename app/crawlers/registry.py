@@ -1,12 +1,10 @@
 from app.crawlers.generic_gov import GenericGovCrawler
-from app.crawlers.hangzhou_gov import HangzhouGovCrawler
 
 
 class CrawlerRegistry:
     def __init__(self):
         self._registry = {
             "generic_gov": GenericGovCrawler,
-            "hangzhou_gov": HangzhouGovCrawler,
         }
 
     def create(self, name: str, config):
@@ -17,3 +15,4 @@ class CrawlerRegistry:
 
 
 crawler_registry = CrawlerRegistry()
+

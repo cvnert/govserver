@@ -8,8 +8,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.models import Document, DocumentChunk, DocumentChunkVector
 from app.schemas import SearchResult
-from app.services.embedding import get_embedding_service
-from app.services.vectorizer import cosine_similarity, expand_semantic_queries, loads_vector
+from app.services.vectorizer import cosine_similarity, expand_semantic_queries, loads_vector, text_to_vector
 
 
 @dataclass
@@ -27,7 +26,6 @@ class SearchCandidate:
 class RetrievalService:
     def __init__(self, db: Session):
         self.db = db
-        self.embedding = get_embedding_service()
 
     def search(self, query: str, limit: int = 20, queries: list[str] | None = None) -> list[SearchResult]:
         normalized_queries = self._normalized_queries(query, queries)
@@ -97,7 +95,7 @@ class RetrievalService:
         return results
 
     def _merge_vector_candidates(self, results: dict[int, SearchCandidate], query: str, limit: int) -> None:
-        query_vector = self.embedding.embed_query(query)
+        query_vector = text_to_vector(query)
         if not any(query_vector):
             return
 

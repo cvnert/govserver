@@ -1,20 +1,4 @@
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: gov-rag-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-gov_rag}
-      POSTGRES_USER: ${POSTGRES_USER:-gov_rag}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gov_rag_password}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   backend:
     build:
       context: .
@@ -26,12 +10,10 @@ services:
     environment:
       HOST: 0.0.0.0
       PORT: 8081
-      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-gov_rag}:${POSTGRES_PASSWORD:-gov_rag_password}@postgres:5432/${POSTGRES_DB:-gov_rag}
-    depends_on:
-      postgres:
-        condition: service_healthy
+      DATABASE_URL: sqlite:////data/gov_rag.db
     volumes:
       - ./app/sources:/app/app/sources
+      - ./data:/data
     expose:
       - "8081"
 
@@ -47,6 +29,3 @@ services:
       - backend
     ports:
       - "80:80"
-
-volumes:
-  postgres_data:
